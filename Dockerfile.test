@@ -1,0 +1,19 @@
+FROM php:5.6.40-alpine AS composer-with-php5.6
+
+## Install Docker composer
+RUN apk add zlib-dev && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
+    php composer-setup.php && php -r "unlink('composer-setup.php');" && mv composer.phar /usr/local/bin/composer
+
+
+## copy resource to images
+FROM composer-with-php5.6 as build_stage_image
+WORKDIR /sls/opentelemetry-php
+COPY . .
+RUN composer install --no-interaction --no-progress --no-scripts --optimize-autoloader
+
+## build test stage image
+FROM build_stage_image as test_stage_image
+ENV ACCESS_KEY_ID="" ACCESS_SEC="" \
+    PROJECT="" LOGSTORE=""
+CMD [ "sh" ]
