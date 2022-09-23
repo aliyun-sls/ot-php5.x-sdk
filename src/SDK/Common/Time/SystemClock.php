@@ -6,12 +6,8 @@ use function microtime;
 
 final class SystemClock implements ClockInterface
 {
-    private static $instance = null;
-    private static $referenceTime = 0;
-
     public function __construct()
     {
-        self::init();
     }
 
     /**
@@ -19,11 +15,7 @@ final class SystemClock implements ClockInterface
      */
     public static function getInstance()
     {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
+        return new self();
     }
 
     public static function create()
@@ -35,7 +27,7 @@ final class SystemClock implements ClockInterface
     public function now()
     {
         // PHP 7.3+ has hrtime() which is a better choice for measuring elapsed time
-        return self::$referenceTime  * 1000000;
+        return microtime(true)  * 1000000;
     }
 
     /**
@@ -44,14 +36,5 @@ final class SystemClock implements ClockInterface
     public function nanoTime()
     {
         return $this->now();
-    }
-
-    private static function init()
-    {
-        if (self::$referenceTime > 0) {
-            return;
-        }
-
-        self::$referenceTime = microtime(true);
     }
 }
