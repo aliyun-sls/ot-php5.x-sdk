@@ -6,9 +6,13 @@ use OpenTelemetry\API\Trace\StatusCode;
 use OpenTelemetry\Context\Context;
 use OpenTelemetry\Context\Propagation\ArrayAccessGetterSetter;
 use OpenTelemetry\Context\Propagation\SanitizeCombinedHeadersPropagationGetter;
+use OpenTelemetry\SDK\Common\Attribute\Attributes;
+use OpenTelemetry\SDK\Resource\ResourceInfo;
+use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\SDK\Trace\Sampler\ParentBased;
 use OpenTelemetry\SDK\Trace\SpanExporter\SlsSdkSpanExporter;
 use OpenTelemetry\SDK\Trace\SpanExporterInterface;
-use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
+use OpenTelemetry\SDK\Trace\SpanProcessor\BatchSpanProcessor;
 use OpenTelemetry\SDK\Trace\TracerProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +38,8 @@ final class SlsSdkSpanExporterTest extends TestCase
         $logstore = getenv('LOGSTORE');
 
         $Exporter = new SlsSdkSpanExporter("cn-beijing.log.aliyuncs.com", $project, $logstore, $accessKeyId, $accessSec);
-        $tracerProvider = new TracerProvider(new SimpleSpanProcessor($Exporter));
+        $tracerProvider = new TracerProvider(new BatchSpanProcessor($Exporter), new ParentBased(new AlwaysOnSampler()),
+            ResourceInfo::create(Attributes::create(['service.name' => 'test'])));
         $tracer = $tracerProvider->getTracer('io.opentelemetry.contrib.php');
         $span = $tracer
             ->spanBuilder('get-user')
@@ -57,7 +62,8 @@ final class SlsSdkSpanExporterTest extends TestCase
         $logstore = getenv('LOGSTORE');
 
         $Exporter = new SlsSdkSpanExporter("cn-beijing.log.aliyuncs.com", $project, $logstore, $accessKeyId, $accessSec);
-        $tracerProvider = new TracerProvider(new SimpleSpanProcessor($Exporter));
+        $tracerProvider = new TracerProvider(new BatchSpanProcessor($Exporter), new ParentBased(new AlwaysOnSampler()),
+            ResourceInfo::create(Attributes::create(['service.name' => 'test'])));
         $tracer = $tracerProvider->getTracer('io.opentelemetry.contrib.php');
         $span = $tracer
             ->spanBuilder('get-user')

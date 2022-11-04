@@ -3,21 +3,15 @@
 
 namespace OpenTelemetry\SDK\Trace\SpanProcessor;
 
-use function assert;
-use function count;
 use InvalidArgumentException;
-use OpenTelemetry\Context\Context;
 use OpenTelemetry\SDK\Behavior\LogsMessagesTrait;
-use OpenTelemetry\SDK\Common\Future\CancellationInterface;
-use OpenTelemetry\SDK\Common\Time\ClockInterface;
-use OpenTelemetry\SDK\Trace\ReadableSpanInterface;
-use OpenTelemetry\SDK\Trace\ReadWriteSpanInterface;
+use OpenTelemetry\SDK\Common\Time\ClockFactory;
 use OpenTelemetry\SDK\Trace\SpanDataInterface;
-use OpenTelemetry\SDK\Trace\SpanExporterInterface;
 use OpenTelemetry\SDK\Trace\SpanProcessorInterface;
 use SplQueue;
+use function assert;
+use function count;
 use function sprintf;
-use Exception;
 
 class BatchSpanProcessor implements SpanProcessorInterface
 {
@@ -48,7 +42,7 @@ class BatchSpanProcessor implements SpanProcessorInterface
 
     private $closed = false;
 
-    public function __construct($exporter, $clock, $maxQueueSize = self::DEFAULT_MAX_QUEUE_SIZE, $scheduledDelayMillis = self::DEFAULT_SCHEDULE_DELAY,
+    public function __construct($exporter, $clock = null, $maxQueueSize = self::DEFAULT_MAX_QUEUE_SIZE, $scheduledDelayMillis = self::DEFAULT_SCHEDULE_DELAY,
                                 $exportTimeoutMillis = self::DEFAULT_EXPORT_TIMEOUT, $maxExportBatchSize = self::DEFAULT_MAX_EXPORT_BATCH_SIZE, $autoFlush = true)
     {
         if ($maxQueueSize <= 0) {
@@ -68,7 +62,7 @@ class BatchSpanProcessor implements SpanProcessorInterface
         }
 
         $this->exporter = $exporter;
-        $this->clock = $clock;
+        $this->clock = isset($clock) ? $clock : ClockFactory::getDefault();
         $this->maxQueueSize = $maxQueueSize;
         $this->scheduledDelayNanos = $scheduledDelayMillis * 1000000;
         $this->maxExportBatchSize = $maxExportBatchSize;

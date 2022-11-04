@@ -13,7 +13,7 @@ final class Attributes implements IteratorAggregate
     /**
      * @internal
      */
-    public function __construct($attributes, $droppedAttributesCount)
+    public function __construct($attributes = [], $droppedAttributesCount = null)
     {
         $this->attributes = $attributes;
         $this->droppedAttributesCount = $droppedAttributesCount;
