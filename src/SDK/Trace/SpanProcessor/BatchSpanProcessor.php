@@ -145,7 +145,7 @@ class BatchSpanProcessor implements SpanProcessorInterface
                     $propagateResult = $arrayResult[2];
 
                     try {
-                        $result = $this->exporter->$flushMethod($cancellation);
+                        $result = $this->exporter->forceFlush($cancellation);
                         if ($propagateResult) {
                             $success = $result;
                         }
